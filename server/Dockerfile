@@ -3,6 +3,6 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN mkdir -p /usr/src/app/uploads
+RUN mkdir -p /home/cachumbin/cachun-home-cloud/server/uploads
 EXPOSE 3000
-CMD ["node", "app.js"]
+CMD ["node", "server/index.js"]
