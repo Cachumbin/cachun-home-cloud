@@ -33,4 +33,23 @@ router.put('/move/:srcPath/:destPath', (req, res) => {
     });
 });
 
+router.delete('/:filePath', (req, res) => {
+    const filePath = req.params.filePath.replace(/~/g, path.sep).replace('root', '');
+    const fullPath = path.join(__dirname, '../uploads', filePath);
+
+    if (!fs.existsSync(fullPath)) {
+        return res.status(404).send('File not found.');
+    }
+
+    fs.unlink(fullPath, (err) => {
+        if (err) {
+            return res.status(500).send('Failed to delete the file.');
+        }
+        res.send({
+            message: 'File deleted successfully!',
+            filePath,
+        });
+    });
+});
+
 module.exports = router;
