@@ -90,4 +90,31 @@ router.delete('/directory/:dirPath', (req, res) => {
     });
 });
 
+router.put('/rename/:filePath/:newName', (req, res) => {
+    const filePath = req.params.filePath.replace(/~/g, path.sep).replace('root', '');
+    const newName = req.params.newName;
+    const fullPath = path.join(__dirname, '../uploads', filePath);
+    const newFullPath = path.join(path.dirname(fullPath), newName);
+
+    if (!fs.existsSync(fullPath)) {
+        return res.status(404).send('File not found.');
+    }
+
+    if (fs.existsSync(newFullPath)) {
+        return res.status(400).send('A file with the new name already exists.');
+    }
+
+    fs.rename(fullPath, newFullPath, (err) => {
+        if (err) {
+            return res.status(500).send('Failed to rename the file.');
+        }
+        res.send({
+            message: 'File renamed successfully!',
+            oldName: path.basename(fullPath),
+            newName,
+            path: path.relative(path.join(__dirname, '../uploads'), newFullPath).replace(/\\/g, '/'),
+        });
+    });
+});
+
 module.exports = router;
