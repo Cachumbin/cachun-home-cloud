@@ -117,4 +117,42 @@ router.put('/rename/:filePath/:newName', (req, res) => {
     });
 });
 
+const searchFilesByName = (directory, searchName) => {
+    let results = [];
+    const items = fs.readdirSync(directory);
+
+    items.forEach((item) => {
+        const itemPath = path.join(directory, item);
+        const stats = fs.statSync(itemPath);
+
+        if (stats.isDirectory()) {
+            results = results.concat(searchFilesByName(itemPath, searchName));
+        } else if (stats.isFile() && item.includes(searchName)) {
+            results.push({
+                name: item,
+                path: itemPath.replace(/\\/g, '/'),
+                url: `/uploads/${path.relative(path.join(__dirname, '../uploads'), itemPath).replace(/\\/g, '/')}`,
+            });
+        }
+    });
+
+    return results;
+};
+
+router.get('/search/:fileName', (req, res) => {
+    const fileName = req.params.fileName;
+    const uploadsDir = path.join(__dirname, '../uploads');
+
+    if (!fs.existsSync(uploadsDir)) {
+        return res.status(404).send('Uploads directory not found.');
+    }
+
+    const matches = searchFilesByName(uploadsDir, fileName);
+
+    res.send({
+        message: `Files matching "${fileName}":`,
+        matches,
+    });
+});
+
 module.exports = router;
