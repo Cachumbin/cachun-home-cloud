@@ -52,4 +52,42 @@ router.delete('/:filePath', (req, res) => {
     });
 });
 
+router.post('/directory/:dirPath', (req, res) => {
+    const dirPath = req.params.dirPath.replace(/~/g, path.sep).replace('root', '');
+    const fullPath = path.join(__dirname, '../uploads', dirPath);
+
+    if (fs.existsSync(fullPath)) {
+        return res.status(400).send('Directory already exists.');
+    }
+
+    fs.mkdir(fullPath, { recursive: true }, (err) => {
+        if (err) {
+            return res.status(500).send('Failed to create the directory.');
+        }
+        res.send({
+            message: 'Directory created successfully!',
+            dirPath,
+        });
+    });
+});
+
+router.delete('/directory/:dirPath', (req, res) => {
+    const dirPath = req.params.dirPath.replace(/~/g, path.sep).replace('root', '');
+    const fullPath = path.join(__dirname, '../uploads', dirPath);
+
+    if (!fs.existsSync(fullPath)) {
+        return res.status(404).send('Directory not found.');
+    }
+
+    fs.rmdir(fullPath, { recursive: true }, (err) => {
+        if (err) {
+            return res.status(500).send('Failed to delete the directory.');
+        }
+        res.send({
+            message: 'Directory deleted successfully!',
+            dirPath,
+        });
+    });
+});
+
 module.exports = router;
